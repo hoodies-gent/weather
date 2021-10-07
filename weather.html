@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Channel</title>
+    <style>
+        h1{
+            background-color: navy;
+            font-size: 30px;
+            
+            color:white;
+            text-align: center;
+            border: 2px white;
+            border-radius: 12px;
+            padding-top:10px;
+            padding-bottom: 10px;
+            margin: 3px;
+            
+        }
+        h4{
+            
+            text-align: center;
+            margin:5px;
+            margin-top:0;
+            padding-top:0;
+        }
+        
+        #main{
+            margin: 3px;
+            background-color:#548de9 ;
+            border: 2px white;
+            border-radius: 12px;
+            PADDING: 20px;
+            text-align: center;
+            font-size: 20px;
+            color: white;
+            bottom:0;
+        }
+        
+        #container{
+            height: 300px;
+            align-self: center;
+            margin: 20px;
+        }
+        #loc{
+            font-size: 40px;
+            margin:0;
+            padding:0;
+            font-weight: bold;
+        }
+        #dingwei{
+            text-align: center;
+        }
+        #city_name{
+            border-radius: 5px;
+            border-color: #548de9;
+            font-size: 12px;
+            text-align: center;
+            color: #548de9;
+            width: 155px;
+        }
+        #chaxun{
+            border-radius: 5px;
+            background-color: white;
+            border-color: #548de9;
+            color: #548de9;
+            font-size: 11px;
+            font-weight: bolder;
+        }
+        
+    </style>
+    <link rel="stylesheet" href="http://at.alicdn.com/t/font_2848746_ggwlpti3iol.css"/>
+
+    
+</head>
+
+
+<body style="background-color: #B9D4FC;font-family:Verdana;">
+    <h1>HeaDUp's<br >
+        <small>Weather Channel</small></h1>
+    
+
+    <div id="container"></div>
+    <div id="dingwei"><span style="font-size: 15px;">当前城市：</span><span style="font-size: 35px;" class="iconfont icon-dingwei1"></span><span id='loc'></span></div>
+    <div class="input-card" style="text-align: center;"> 
+        <input type="text" id="city_name" placeholder="输入城市或区县，看看天气">
+        <input type="button" id="chaxun" onclick="f()" value="查询">
+     </div> 
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=8b275e29561d2f3f06347b85df8a28cf&plugin=AMap.CitySearch"></script>
+
+
+<script type="text/javascript">
+//定位模块
+    var map = new AMap.Map("container", {
+        resizeEnable: true,
+        center: [116.397428, 39.90923],
+        zoom: 13
+    });
+    
+     //获取城市信息
+    //实例化城市查询类
+        var citysearch = new AMap.CitySearch();
+        //自动获取用户IP，返回当前城市
+        citysearch.getLocalCity(function(status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+                if (result && result.city && result.bounds) {
+                    var cityinfo = result.city;
+                    var citybounds = result.bounds;
+                    document.getElementById('loc').innerHTML =cityinfo;
+                    //地图显示当前城市
+                    map.setBounds(citybounds);
+                }
+            } else {
+                document.getElementById('loc').innerHTML = result.info;
+            }
+        });
+        
+</script>
+<h4 id="update_time"></h4>
+<div id="main">
+    <p1 style="font-size: 100px;" id="wendu">__</p1><p2>℃</p2><br>
+    <p3 style="font-size: 30px;" id="qixiang"></p3><br>
+    <p4 id="fengxiang" style="margin-left: 0;padding-left: 0;"></p4><p6 id="shidu" style="margin-right: 0;padding-right: 0;"></p6><br><hr>
+    <h5 style="text-align: center;font-size: 30px;margin-bottom: 20px;margin-top: 0;">#今天 到 大后天#</h5>
+    <ul style="list-style-type: none;margin-top: 0;text-align: center;white-space:pre;" id="yubao"></ul>
+</div>
+        
+        
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=8b275e29561d2f3f06347b85df8a28cf&plugin=AMap.Weather"></script>
+<script>
+function f(){
+
+//实时天气
+ //加载天气查询插件
+AMap.plugin('AMap.Weather', function() {
+    //创建天气查询实例
+    var weather = new AMap.Weather();
+
+    //执行实时天气信息查询
+    weather.getLive(document.getElementById('city_name').value, function(err, data) {
+        //console.log(err, data);
+        function quotes_free(data){
+        var str=JSON.stringify(data);
+        str=str.substring(1,str.length - 1);
+        return str;}
+        document.getElementById('qixiang').innerHTML=quotes_free(data.weather);
+        document.getElementById('wendu').innerHTML=JSON.stringify(data.temperature);
+        document.getElementById('fengxiang').innerHTML='风力/向：'+quotes_free(data.windPower)+'级 '+quotes_free(data.windDirection)+'风｜';
+        document.getElementById('shidu').innerHTML='湿度：'+quotes_free(data.humidity);
+        document.getElementById('update_time').innerHTML='最近更新时间：'+quotes_free(data.reportTime);
+    
+    });
+
+        //预报
+        weather.getForecast(document.getElementById('city_name').value, function(err, data) {
+            console.log(err,data);
+            
+            var str = [];
+            for (var i = 0,yubao; i < data.forecasts.length; i++) {
+                yubao = data.forecasts[i];
+                var num = yubao.week;
+                var chn_week = "";
+                let changeNum = ['零','一','二','三','四','五','六','日'];
+                chn_week = changeNum[num];
+
+                str.push('星期'+chn_week+'  '+yubao.dayWeather+'  '+yubao.nightTemp + '~' + yubao.dayTemp + '℃'+'  '+yubao.dayWindDir+'风');
+            }
+            document.getElementById('yubao').innerHTML = str.join('<br>');
+        });
+
+});
+}
+
+
+</script>
+</body>
+</html>
